@@ -90,12 +90,10 @@ def joinResourceShelters():
             SELECT name_locale, name RECURSO, latitude, longitude
             FROM shelters 
             WHERE tags[1] = 'RemainingSupplies'
-            AND latitude IS NOT NULL
         ) tb_s LEFT JOIN (
             SELECT name_locale, name RECURSO, latitude, longitude
             FROM shelters 
             WHERE tags[1] = 'NeedDonations'
-            AND latitude IS NOT NULL
         ) tb_p ON tb_p.RECURSO = tb_s.RECURSO
         WHERE tb_p.name_locale IS NOT NULL;
     """
@@ -110,6 +108,39 @@ def calculateDistance(s_latitude, s_longitude, p_latitude, p_longitude):
     response = gmaps.distance_matrix((s_latitude, s_longitude), (p_latitude, p_longitude))
     response_parts = response.get('rows')[0].get('elements')[0].get('distance').get('text').split(" ")
     return response_parts[0], response_parts[1]
+
+def getCoordenates(address):
+    key = config.API_KEY_GMAPS
+
+    gmaps = googlemaps.Client(key=key)
+    geocode_result = gmaps.geocode(address)
+    if geocode_result:
+        location = geocode_result[0]['geometry']['location']
+        return location['lat'], location['lng']
+    else:
+        return None, None
+
+def enrichmentCoordenates():
+    cursor = get_conn()
+
+    query = """
+        SELECT DISTINCT name_locale, address 
+        FROM shelters 
+        WHERE latitude IS NULL OR longitude IS NULL
+    """
+
+    query_update = """
+        UPDATE shelters SET latitude = ?, longitude = ?
+        WHERE name_locale = ? AND address = ?
+    """
+
+    for row in cursor.execute(query).fetchall():
+        name_locale, address = row[0], row[1]
+        lat, lng = getCoordenates(address)
+        print(f"{name_locale} -> {lat} / {lng}")
+        cursor.execute(query_update, (lat, lng, name_locale, address))
+
+
 
 def enrichmentDistance():
     cursor = get_conn()
@@ -134,8 +165,11 @@ def enrichmentDistance():
 
 def main():
     # Extrai Database Full
-    extract()
-    transformAndLoad()
+    # extract()
+    # transformAndLoad()
+
+    # Busca Latitude e Longitude de endereços não preenchidos
+    enrichmentCoordenates()
 
     # Gera cruzamento de dados para report final
     joinResourceShelters()

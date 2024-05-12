@@ -32,27 +32,32 @@ def side_bar():
     elif btn_02:
         page_remaining_supplies()
     elif btn_03:
-        page_graph_resource()
+        page_transfer()
     else:
-        page_graph_resource()
+        page_transfer()
 
-def page_graph_resource():
-    G = nx.Graph()
 
-    for row in get_rows("SELECT name_locale, RECURSO FROM tb_cruzamento"):
-        G.add_edge(row[0], row[1])
+def page_transfer():
+    df_transfer = get_df("""
+        SELECT s_locale, p_locale, group_concat(resource) resources, distance 
+        FROM tb_s_p 
+        WHERE distance <= 20
+        GROUP BY s_locale, p_locale , distance 
+        ORDER BY distance ASC
+    """)
 
-    for row in get_rows("SELECT name_locale_1, RECURSO_1 FROM tb_cruzamento"):
-        G.add_edge(row[1], row[0])
-
-    nt = Network("450px", "100%", notebook=True, directed=True)
-    nt.from_nx(G)
-    nt.show("./storage/graph/graph.html")
-
-    html = open('./storage/graph/graph.html', 'r', encoding='utf-8')
-    source = html.read()
-    st.markdown("<h3 style='text-align: center;'>Recursos sobressalentes x faltantes</h3>", unsafe_allow_html=True)
-    components.html(source, height=450)
+    st.markdown("<h3 style='text-align: center;'>Possíveis Transferências: </h3>", unsafe_allow_html=True)
+    st.dataframe(df_transfer, use_container_width=True, column_config={
+        "s_locale": "Abrigo Origem",
+        "p_locale": "Abrigo Destino",
+        "resources": "Recursos",
+        "distance": st.column_config.NumberColumn(
+            "Distância",
+            help="Distância entre Abrigos",
+            format="%d km",
+        )
+    },
+    hide_index=True)
 
 def page_need_donations():
     df_doacao = get_df("""
