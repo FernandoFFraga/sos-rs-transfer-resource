@@ -1,0 +1,5 @@
+.venv312
+lib/
+storage/
+.idea/
+config.py
