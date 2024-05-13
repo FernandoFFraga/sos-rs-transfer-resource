@@ -1,9 +1,6 @@
-import streamlit as st
-from pyvis.network import Network
-import networkx as nx
-import streamlit.components.v1 as components
 import duckdb
 import plotly.express as px
+import streamlit as st
 
 
 def get_rows(query):
