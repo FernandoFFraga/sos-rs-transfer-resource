@@ -5,8 +5,7 @@ import os
 import duckdb
 import googlemaps
 import requests
-
-import config
+import streamlit as st
 
 endpoint_pattern = "https://api.sos-rs.com/shelters?orderBy=prioritySum&order=desc&page={}&perPage={}"
 
@@ -102,7 +101,7 @@ def joinResourceShelters():
     get_conn().execute(query_create_table)
 
 def calculateDistance(s_latitude, s_longitude, p_latitude, p_longitude):
-    key = config.API_KEY_GMAPS
+    key = st.secrets['API_KEY_GMAPS']
 
     gmaps = googlemaps.Client(key=key)
     response = gmaps.distance_matrix((s_latitude, s_longitude), (p_latitude, p_longitude))
@@ -110,7 +109,7 @@ def calculateDistance(s_latitude, s_longitude, p_latitude, p_longitude):
     return response_parts[0], response_parts[1]
 
 def getCoordenates(address):
-    key = config.API_KEY_GMAPS
+    key = st.secrets['API_KEY_GMAPS']
 
     gmaps = googlemaps.Client(key=key)
     geocode_result = gmaps.geocode(address)
@@ -165,8 +164,8 @@ def enrichmentDistance():
 
 def main():
     # Extrai Database Full
-    # extract()
-    # transformAndLoad()
+    extract()
+    transformAndLoad()
 
     # Busca Latitude e Longitude de endereços não preenchidos
     enrichmentCoordenates()

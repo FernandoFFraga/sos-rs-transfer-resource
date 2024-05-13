@@ -1,5 +1,7 @@
 .venv312
 lib/
-storage/
+storage/graph/*
+storage/raw/*
 .idea/
 config.py
+.streamlit/secrets.toml
