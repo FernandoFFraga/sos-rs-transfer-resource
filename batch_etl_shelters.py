@@ -64,12 +64,7 @@ def transformAndLoad():
             
             unnest(shelterSupplies,  recursive := true),
             concat(address, ' - Rio Grande do Sul') AS address,
-            UPPER(name) AS name_locale, 
-            CASE
-                WHEN contact LIKE '%whatsapp%' THEN contact
-                WHEN contact IS NULL OR contact = '' THEN 'Não Informado'
-                ELSE replace(replace(replace(replace(replace(contact, ' ', ''), '.', ''), '(', ''), ')', ''), '-', '')
-            END AS contact
+            UPPER(name) AS name_locale
         FROM read_json_auto('./storage/raw/shelter_part_*.json', format = 'array');
     """
 
@@ -164,7 +159,7 @@ def enrichmentDistance():
 
 def main():
     # Extrai Database Full
-    extract()
+    # extract()
     transformAndLoad()
 
     # Busca Latitude e Longitude de endereços não preenchidos
