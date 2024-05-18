@@ -159,7 +159,7 @@ def enrichmentDistance():
 
 def main():
     # Extrai Database Full
-    # extract()
+    extract()
     transformAndLoad()
 
     # Busca Latitude e Longitude de endereços não preenchidos
